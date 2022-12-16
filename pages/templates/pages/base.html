@@ -1,0 +1,151 @@
+
+{% load static %}
+
+<head>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous"> -->
+
+    <link rel="stylesheet" type="text/css" href="{% static 'pages/css/base.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- <script src="script.js" defer>
+        document.getElementById('button-bar').innerHTML = `
+        <div class="btn-toolbar" role="toolbar">
+            <button type="button" class="btn btn-secondary btn-lg" id="add-btn" onclick="click_add()"><i class="fa fa-plus"></i> Add</button>
+            <button type="button" class="btn btn-secondary btn-lg" id="edit-btn" onclick="click_edit()"><i class="fa fa-pencil"></i> Edit</button>
+            <button type="button" class="btn btn-secondary btn-lg" id = "delete-btn" onclick="click_delete()"><i class="fa fa-trash"></i> Delete</button>
+        </div>
+        `;
+    </script> -->
+    <script>
+        $(document).ready(show_button_bar);
+        function show_button_bar(){
+            document.getElementById('button-bar').innerHTML = `
+            <div class="btn-toolbar" role="toolbar">
+                <button type="button" class="btn btn-secondary btn-lg" id="add-btn" onclick="click_add()"><i class="fa fa-plus"></i> Add</button>
+                <button type="button" class="btn btn-secondary btn-lg" id="edit-btn" onclick="click_edit()"><i class="fa fa-pencil"></i> Edit</button>
+                <button type="button" class="btn btn-secondary btn-lg" id = "delete-btn" onclick="click_delete()"><i class="fa fa-trash"></i> Delete</button>
+            </div>
+            `;
+        }
+        // window.onload = show_button_bar();
+
+        
+        function click_delete() {
+    
+                let highlightedItems = Array.from(document.querySelectorAll("tbody input[type=checkbox]"));
+    
+                let filtered = highlightedItems.filter((item) => {
+                    return item['checked'];
+                });
+    
+                let id_list = Array();
+                filtered.forEach(function (item) {
+                    id_list.push(item.getAttribute('value'));
+                    console.log(item.getAttribute('value'));
+                    
+                });
+                
+                if (id_list.length == 0) {
+                    alert("Please select at least one row to delete.");
+                    return
+                }
+                let confirm_res = confirm(`Are You sure to delete ${id_list.length} row(s)?`);
+    
+                if (confirm_res == false) {
+                    return;
+                }
+    
+                var current_location = window.location.href;
+                var current_page = current_location.split('/')[3];
+                $.ajax({
+                    url: `/delete`,
+                    type: 'GET',
+                    data: {'id_list[]': id_list, 'page': current_page},
+                    traditional: true,
+                    success: function(){
+                        alert(`delete succeed.`);
+                        window.location.reload();
+                    }
+    
+                });   
+            } 
+        
+        
+        function click_add() {
+            $.ajax({
+                    url: `/detail_popup`,
+                    type: 'GET',
+                    // traditional: true,
+                    success: function(response){
+                        var modal = document.getElementById("detail-popup");
+                        modal.style.display = "block";
+                        $('#detail-popup-content').html(response);
+                    }
+                });   
+        }
+
+        function click_edit() {
+            let highlightedItems = Array.from(document.querySelectorAll("tbody input[type=checkbox]"));
+            let filtered = highlightedItems.filter((item) => {
+                    return item['checked'];
+                });
+    
+            let id_list = Array();
+            filtered.forEach(function (item) {
+                id_list.push(item.getAttribute('value'));
+                console.log(item.getAttribute('value'));
+                
+            });
+            
+            if (id_list.length != 1) {
+                alert("Please select one row to edit.");
+                return
+            }
+
+            
+
+            $.ajax({
+                    url: `/detail_popup/`,
+                    type: 'POST',
+                    data: {
+                        'show-edit-id': id_list[0],
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    // traditional: true,
+                    success: function(response){
+                        var modal = document.getElementById("detail-popup");
+                        modal.style.display = "block";
+                        $('#detail-popup-content').html(response);
+                    }
+                });   
+        }
+
+        function close_popup() {
+            var modal = document.getElementById("detail-popup");
+            modal.style.display = "none";
+        }
+    </script>
+
+</head>
+<body>
+    <div id="detail-popup" class="modal">
+        <div class="modal-content">
+          <div class="close-popup" onclick="close_popup()">&times;</div>
+          <div id="detail-popup-content">
+
+          </div>
+        </div>
+    </div>
+    
+    <div class="page-body">
+        {% block body %}Temp Body{% endblock body %}
+    </div>
+    
+</body>
+
+{% block content %} {% endblock content %}
+{% block scripts %} {% endblock scripts %}
+</html>

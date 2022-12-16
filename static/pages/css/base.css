@@ -1,0 +1,12 @@
+div.page-body {
+    padding: 20px 60px;
+}
+
+.et_pb_button {
+    display: inline-block;
+    margin: 5px; /* space between buttons */
+}
+
+#button-bar {
+    margin-bottom: 20px;
+}
